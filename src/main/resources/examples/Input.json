@@ -1,0 +1,41 @@
+[{
+
+  "statusCode" : "NEW",
+
+  "ledgerID" : 300000002916709,
+
+  "transactionEffectiveDate" : "2020-12-21",
+
+  "journalSource" : "Spreadsheet",
+
+  "journalCategory" : "Adjustment",
+
+  "currencyCode" : "USD",
+
+  "journalEntryCreationDate" : "2020-12-21",
+
+  "actualFlag" : "A",
+
+  "coaSegments" : ["101","102"] ,
+
+  "enteredDebitAmount" : 3000.00,
+
+  "enteredCreditAmount" : 3000.00,
+
+  "convertedDebitAmount" : 3000.00,
+
+  "convertedCreditAmount" : 3000.00,
+
+  "batchName" : "SR Journal Batch - 26-Aug-2020 - 3",
+
+  "batchDescription" :  "SR Journal Batch - 26-Aug-2020 - 3",
+
+  "clearingCompany" : "test",
+
+  "currencyConversionDate" : "2021-01-12",
+
+  "flexfieldSegments" :["101","102"],
+
+  "groupId" : 123
+
+}]

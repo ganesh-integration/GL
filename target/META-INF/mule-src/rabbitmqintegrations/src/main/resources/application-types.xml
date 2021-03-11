@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="inputType" format="json">
+      <types:shape format="weave" example="examples/Input.json"><![CDATA[%dw 2.0
+
+type inputType = Array<{|  statusCode: String,   ledgerID: Number {"typeId": "double"},   transactionEffectiveDate: String,   journalSource: String,   journalCategory: String,   currencyCode: String,   journalEntryCreationDate: String,   actualFlag: String,   coaSegments: Array<String>, 
+  enteredDebitAmount: Number {"typeId": "double"}, 
+  enteredCreditAmount: Number {"typeId": "double"}, 
+  convertedDebitAmount: Number {"typeId": "double"}, 
+  convertedCreditAmount: Number {"typeId": "double"}, 
+  batchName: String, 
+  batchDescription: String, 
+  clearingCompany: String, 
+  currencyConversionDate: String, 
+  flexfieldSegments: Array<String>, 
+  groupId: Number {"typeId": "int"}
+|}> {"example": "[{\\\"statusCode\\\":\\\"NEW\\\",\\\"ledgerID\\\":300000002916709,\\\"transactionEffectiveDate\\\":\\\"2020-12-21\\\",\\\"journalSource\\\":\\\"Spreadsheet\\\",\\\"journalCategory\\\":\\\"Adjustment\\\",\\\"currencyCode\\\":\\\"USD\\\",\\\"journalEntryCreationDate\\\":\\\"2020-12-21\\\",\\\"actualFlag\\\":\\\"A\\\",\\\"coaSegments\\\":[\\\"101\\\",\\\"102\\\"],\\\"enteredDebitAmount\\\":3000.00,\\\"enteredCreditAmount\\\":3000.00,\\\"convertedDebitAmount\\\":3000.00,\\\"convertedCreditAmount\\\":3000.00,\\\"batchName\\\":\\\"SR Journal Batch - 26-Aug-2020 - 3\\\",\\\"batchDescription\\\":\\\"SR Journal Batch - 26-Aug-2020 - 3\\\",\\\"clearingCompany\\\":\\\"test\\\",\\\"currencyConversionDate\\\":\\\"2021-01-12\\\",\\\"flexfieldSegments\\\":[\\\"101\\\",\\\"102\\\"],\\\"groupId\\\":123}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="outputType" format="csv">
+      <types:shape format="weave" example="examples/GlInterface-6.csv"><![CDATA[%dw 2.0
+
+type outputType = Array<{|  NEW: String,   "300000002916709": String,   "2020/08/26": String,   Spreadsheet: String,   Adjustment: String,   USD: String,   "2020/08/26": String,   A: String,   "101": String,   "000": String,   "11200": String,   "000": String,   "000": String,   "000": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "3000.00": String,   "": String,   "3000.00": String,   "": String,   "SR Journal Batch - 26-Aug-2020 - 3": String,   "": String,   "": String,   "SR Journal - 26-Aug-2020 - 3": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "260820203": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "": String,   "Aug-20": String,   END: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#5cfee7ec-5e14-48cc-b6cc-be5cbd1fa8fe"/>
+</types:mule>

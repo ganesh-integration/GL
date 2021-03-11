@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:oracleerpcloud="http://www.mulesoft.org/schema/mule/oracleerpcloud" xmlns:crypto="http://www.mulesoft.org/schema/mule/crypto"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:amqp="http://www.mulesoft.org/schema/mule/amqp" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/amqp http://www.mulesoft.org/schema/mule/amqp/current/mule-amqp.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/crypto http://www.mulesoft.org/schema/mule/crypto/current/mule-crypto.xsd
+http://www.mulesoft.org/schema/mule/oracleerpcloud http://www.mulesoft.org/schema/mule/oracleerpcloud/current/mule-oracleerpcloud.xsd">
+	<amqp:config name="AMQP_Config" doc:name="AMQP Config" doc:id="69ad4b4a-68cf-435b-808d-a6d9c7b3cfaa" sendCorrelationId="ALWAYS" >
+		<amqp:connection host="localhost" port="5672" username="guest" password="guest" />
+	</amqp:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="c14f4039-c420-4ea2-9aca-d21008cc6718" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<crypto:pgp-config name="Crypto_Pgp" doc:name="Crypto Pgp" doc:id="ccbeed04-65d3-4920-85b6-ce6b07f454f8" publicKeyring="F:\Workspaces\Anypoint\rabbitmqintegrations\src\main\resources\ganesh_0x80CB21F8_public.gpg" >
+		<crypto:pgp-key-infos >
+			<crypto:pgp-asymmetric-key-info keyId="journalkey" fingerprint="D7DBC2CEACA4EDB729B824E8311E68EC80CB21F8" />
+		</crypto:pgp-key-infos>
+	</crypto:pgp-config>
+	<oracleerpcloud:config name="OracleERPCloud_Config" doc:name="OracleERPCloud Config" doc:id="14b85246-32bf-4d02-93f0-c64f0de66e74" >
+		<oracleerpcloud:connection hostAddress="https://ereq-test.fa.ap1.oraclecloud.com" userName="TG.Int" password="Oracle123" />
+	</oracleerpcloud:config>
+	<flow name="PushJournalsToAMQ" doc:id="c8d57f9e-f722-4483-bc6f-330782108f6c" >
+		<http:listener doc:name="Listener" doc:id="6724a176-4857-4d5b-a541-dcfd75db3f7f" config-ref="HTTP_Listener_config" path="/amq"/>
+		<amqp:publish doc:name="Publish" doc:id="c8d6888a-9b94-40ac-9f6e-f9c4a03dc896" config-ref="AMQP_Config" exchangeName="GeneralLedger" deliveryMode="PERSISTENT"/>
+		<logger level="INFO" doc:name="Logger" doc:id="c8da400e-b3fd-4a80-8f61-ca9ea5c6694d" message="Message published successfully"/>
+		<set-payload value="Message published successfully to GeneralLedger Exchange" doc:name="Set Payload" doc:id="60557a9f-0e46-47b6-9060-a1991ea6a6b9" />
+	</flow>
+	<flow name="ListenJournalsFromAMQ" doc:id="0bbf91a3-9c1e-4dd3-9f12-10acd6be46b8" >
+		<amqp:listener doc:name="Listener" doc:id="123e8ed2-8188-4c3f-a50d-b8136a50d332" config-ref="AMQP_Config" queueName="Journal" numberOfConsumers="1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="c1caab47-380e-42d2-8b6a-869a513ac6ab" message="#[payload]"/>
+		<flow-ref doc:name="GenerateDataFile" doc:id="02d7977a-ebe4-411e-bc40-a5d044dccf6d" name="GenerateDataFile"/>
+		
+	</flow>
+	<flow name="GenerateDataFile" doc:id="2f6a242a-c06d-4345-8078-b432c52f6e28" >
+		<logger level="INFO" doc:name="Logger" doc:id="d4a60f60-5ba3-462c-8066-71ac9c569ba2" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="febd1746-994b-4cd4-b38c-9eb9c40e6a1e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv separator=",",header=false
+
+
+---
+flatten(
+payload map(journal,index) ->
+
+    (journal.coaSegments map(coa,index) ->
+    ({
+        statusCode:journal.statusCode,
+        ledgerID:journal.ledgerID,
+        actualFlag:journal.actualFlag,
+        coaSegments:journal.coaSegments[index],
+        groupId:journal.groupId
+    }
+    )
+    )
+)
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="418a5861-df3c-4c05-8553-7e95166ec293" message="#[payload]"/>
+		<flow-ref doc:name="DataFileEncrypt" doc:id="903624c6-402f-45e7-8c12-d570481cd098" name="DataFileEncrypt"/>
+	</flow>
+	<flow name="DataFileEncrypt" doc:id="9f9253c2-c3a1-4029-8ceb-e889555559ec" >
+		<crypto:pgp-encrypt doc:name="Pgp encrypt" doc:id="150eeaaa-5f49-4b43-a736-5ac655b6b501" config-ref="Crypto_Pgp" keyId="journalkey"/>
+		<logger level="INFO" doc:name="Logger" doc:id="ae398a03-e70f-4bef-b4cc-f1effe3be9ef" message="#[payload]"/>
+	</flow>
+</mule>
